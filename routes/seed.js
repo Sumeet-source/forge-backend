@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 // 1. Paste your MongoDB Atlas connection string here (The one from your server.js)
+
 const MONGO_URI = 'mongodb://dhakad458669_db_user:f1xRo9VUjGwPtsu@cluster0-shard-00-00.alwcqf.mongodb.net:27017,cluster0-shard-00-01.alwcqf.mongodb.net:27017,cluster0-shard-00-02.alwcqf.mongodb.net:27017/forge_db?ssl=true&authSource=admin&retryWrites=true&w=majority';
 
 // 2. Define the Product Schema (Matches your backend model)

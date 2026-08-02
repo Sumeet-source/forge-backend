@@ -10,14 +10,19 @@ app.use(cors());
 // --- ROUTES ---
 const authRoutes = require('./routes/authRoutes.js');
 const productRoutes = require('./routes/productRoutes.js');
-const orderRoutes = require('./routes/orderRoutes.js'); // Added this
+const orderRoutes = require('./routes/orderRoutes.js');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
-app.use('/api/orders', orderRoutes); // Added this
+app.use('/api/orders', orderRoutes);
 
 // --- DATABASE ---
-const MONGO_URI = 'mongodb://dhakad458669_db_user:f1xRo9VUjGwPtsu@cluster0-shard-00-00.alwcqf.mongodb.net:27017,cluster0-shard-00-01.alwcqf.mongodb.net:27017,cluster0-shard-00-02.alwcqf.mongodb.net:27017/forge_db?ssl=true&authSource=admin&retryWrites=true&w=majority';
+// FORCE DEBUG MODE ON (This will print exactly why it's failing or succeeding)
+mongoose.set('debug', true);
+
+// SWITCHED BACK TO SRV STRING (This handles cloud networking better than the standard string)
+const MONGO_URI = 'mongodb+srv://dhakad458669_db_user:f1xRo9VUjGwPtsu@cluster0.alwcqf.mongodb.net/forge_db?retryWrites=true&w=majority&appName=Cluster0';
+
 const connectDB = async () => {
     try {
         await mongoose.connect(MONGO_URI);
@@ -31,5 +36,5 @@ connectDB();
 
 app.get('/', (req, res) => res.send('FORGE Backend is running!'));
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
