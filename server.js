@@ -32,4 +32,4 @@ connectDB();
 app.get('/', (req, res) => res.send('FORGE Backend is running!'));
 
 const PORT = 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));alwcqf
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
