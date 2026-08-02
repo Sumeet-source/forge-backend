@@ -17,7 +17,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes); // Added this
 
 // --- DATABASE ---
-const MONGO_URI = 'mongodb+srv://dhakads458669_db_user:123456@cluster0.alwcqff.mongodb.net/forge_db?retryWrites=true&w=majority&appName=Cluster0';
+const MONGO_URI = 'mongodb+srv://dhakad458669_db_user:f1xRo9VUjGwPtsu@cluster0.alwcqf.mongodb.net/forge_db?retryWrites=true&w=majority&appName=Cluster0';
 const connectDB = async () => {
     try {
         await mongoose.connect(MONGO_URI);
