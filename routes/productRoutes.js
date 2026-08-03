@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product.js');
 
-// --- GET ALL PRODUCTS ---
 router.get('/', async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 });
@@ -12,7 +11,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// --- ADD A NEW PRODUCT ---
 router.post('/', async (req, res) => {
   try {
     const newProduct = new Product(req.body);
@@ -23,7 +21,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// --- DELETE A PRODUCT ---
 router.delete('/:id', async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
@@ -33,7 +30,6 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// --- TOGGLE STOCK ---
 router.put('/:id', async (req, res) => {
   try {
     const updatedProduct = await Product.findByIdAndUpdate(
