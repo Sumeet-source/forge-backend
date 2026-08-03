@@ -22,15 +22,15 @@ app.get('/api/products', async (req, res) => {
   }
 });
 
-// --- KEEP-ALIVE ROUTE (Stops Railway from sleeping) ---
+// --- KEEP-ALIVE ROUTE (Prevents Railway from sleeping) ---
 app.get('/ping', (req, res) => res.send('pong'));
 
-// --- DATABASE (Added 30s timeout to handle slow wake-ups) ---
+// --- DATABASE (30s timeout to handle slow wake-ups) ---
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://dhakad458669_db_user:f1xRo9VUjGwPtsu@cluster0-shard-00-00.alwcqf.mongodb.net:27017,cluster0-shard-00-01.alwcqf.mongodb.net:27017,cluster0-shard-00-02.alwcqf.mongodb.net:27017/forge_db?ssl=true&authSource=admin&retryWrites=true&w=majority&connectTimeoutMS=30000';
 
 const connectDB = async () => {
     try {
-        const options = { family: 4, serverSelectionTimeoutMS: 30000 }; // 30 SECONDS
+        const options = { family: 4, serverSelectionTimeoutMS: 30000 };
         await mongoose.connect(MONGO_URI, options);
         console.log('✅ MongoDB Connected Successfully');
     } catch (error) {
@@ -42,9 +42,5 @@ connectDB();
 
 app.get('/', (req, res) => res.send('FORGE Backend is running!'));
 
-// Add a simple "ping" endpoint to keep the backend awake
-app.get('/ping', (req, res) => {
-    res.send('pong');
-});
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
