@@ -24,8 +24,7 @@ app.get('/api/products', async (req, res) => {
 });
 
 // --- DATABASE ---
-const MONGO_URI = 'mongodb://dhakad458669_db_user:f1xRo9VUjGwPtsu@cluster0-shard-00-00.alwcqf.mongodb.net:27017,cluster0-shard-00-01.alwcqf.mongodb.net:27017,cluster0-shard-00-02.alwcqf.mongodb.net:27017/forge_db?ssl=true&authSource=admin&retryWrites=true&w=majority&connectTimeoutMS=30000';
-
+const MONGO_URI = process.env.MONGO_URI;
 const connectDB = async () => {
     try {
         const options = { family: 4, serverSelectionTimeoutMS: 10000 };
