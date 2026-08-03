@@ -1,19 +1,19 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const Product = require('./models/Product.js'); // Imported directly here
+const Product = require('./models/Product.js');
 const authRoutes = require('./routes/authRoutes.js');
 
 const app = express();
 
+// --- CORS FIX (REMOVED THE BUGGY app.options('*') LINE) ---
 app.use(cors({ origin: '*', credentials: true }));
-app.options('*', cors({ origin: '*', credentials: true }));
 app.use(express.json());
 
 // --- ROUTES ---
 app.use('/api/auth', authRoutes);
 
-// --- DIRECT PRODUCT HANDLER (NO EXTERNAL ROUTE FILE) ---
+// --- DIRECT PRODUCT HANDLER ---
 app.get('/api/products', async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 });
