@@ -1,6 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const Product = require('./models/Product.js'); // Imported directly here
+const authRoutes = require('./routes/authRoutes.js');
 
 const app = express();
 
@@ -8,13 +10,20 @@ app.use(cors({ origin: '*', credentials: true }));
 app.options('*', cors({ origin: '*', credentials: true }));
 app.use(express.json());
 
-// --- ROUTES (ONLY AUTH AND PRODUCTS FOR THE DEMO) ---
-const authRoutes = require('./routes/authRoutes.js');
-const productRoutes = require('./routes/productRoutes.js');
-
+// --- ROUTES ---
 app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
 
+// --- DIRECT PRODUCT HANDLER (NO EXTERNAL ROUTE FILE) ---
+app.get('/api/products', async (req, res) => {
+  try {
+    const products = await Product.find().sort({ createdAt: -1 });
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching products' });
+  }
+});
+
+// --- DATABASE ---
 const MONGO_URI = 'mongodb://dhakad458669_db_user:f1xRo9VUjGwPtsu@cluster0-shard-00-00.alwcqf.mongodb.net:27017,cluster0-shard-00-01.alwcqf.mongodb.net:27017,cluster0-shard-00-02.alwcqf.mongodb.net:27017/forge_db?ssl=true&authSource=admin&retryWrites=true&w=majority&connectTimeoutMS=30000';
 
 const connectDB = async () => {
