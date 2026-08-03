@@ -33,17 +33,17 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 
-// --- DATABASE (HTTPS DATA API - BYPASSES ALL RAILWAY BLOCKS) ---
-const MONGO_URI = 'mongodb+srv://dhakad458669_db_user:f1xRo9VUjGwPtsu@cluster0.alwcqf.mongodb.net/forge_db?retryWrites=true&w=majority&appName=Cluster0';
+// --- DATABASE (DIRECT CONNECTION - IPv4 FORCED) ---
+const MONGO_URI = 'mongodb://dhakad458669_db_user:f1xRo9VUjGwPtsu@cluster0-shard-00-00.alwcqf.mongodb.net:27017,cluster0-shard-00-01.alwcqf.mongodb.net:27017,cluster0-shard-00-02.alwcqf.mongodb.net:27017/forge_db?ssl=true&authSource=admin&retryWrites=true&w=majority&directConnection=true&connectTimeoutMS=10000';
 
 const connectDB = async () => {
     try {
         const options = {
-            apiVersion: '1',
-            driverInfo: { name: 'nodejs', version: '4.x' }
+            family: 4, // Forces IPv4 to bypass ISP/Railway blocks
+            serverSelectionTimeoutMS: 10000
         };
         await mongoose.connect(MONGO_URI, options);
-        console.log('✅ MongoDB Connected Successfully via Data API');
+        console.log('✅ MongoDB Connected Successfully (Direct IP Bypass)');
     } catch (error) {
         console.error('❌ MongoDB connection error:', error);
         process.exit(1);
