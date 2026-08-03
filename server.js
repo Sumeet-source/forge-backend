@@ -33,8 +33,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 
-// --- DATABASE (DIRECT CONNECTION - IPv4 FORCED) ---
-const MONGO_URI = 'mongodb://dhakad458669_db_user:f1xRo9VUjGwPtsu@cluster0-shard-00-00.alwcqf.mongodb.net:27017,cluster0-shard-00-01.alwcqf.mongodb.net:27017,cluster0-shard-00-02.alwcqf.mongodb.net:27017/forge_db?ssl=true&authSource=admin&retryWrites=true&w=majority&directConnection=true&connectTimeoutMS=10000';
+// --- DATABASE (CORRECTED STRING - NO directConnection) ---
+const MONGO_URI = 'mongodb://dhakad458669_db_user:f1xRo9VUjGwPtsu@cluster0-shard-00-00.alwcqf.mongodb.net:27017,cluster0-shard-00-01.alwcqf.mongodb.net:27017,cluster0-shard-00-02.alwcqf.mongodb.net:27017/forge_db?ssl=true&authSource=admin&retryWrites=true&w=majority&connectTimeoutMS=10000';
 
 const connectDB = async () => {
     try {
@@ -43,7 +43,7 @@ const connectDB = async () => {
             serverSelectionTimeoutMS: 10000
         };
         await mongoose.connect(MONGO_URI, options);
-        console.log('✅ MongoDB Connected Successfully (Direct IP Bypass)');
+        console.log('✅ MongoDB Connected Successfully (IPv4 Bypass)');
     } catch (error) {
         console.error('❌ MongoDB connection error:', error);
         process.exit(1);
