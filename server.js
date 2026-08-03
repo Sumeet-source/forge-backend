@@ -1,26 +1,15 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const Product = require('./models/Product.js');
 const authRoutes = require('./routes/authRoutes.js');
 
 const app = express();
+
 app.options('*', cors({ origin: '*', credentials: true }));
-
 app.use(cors({ origin: '*', credentials: true }));
-
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
-
-app.get('/api/products', async (req, res) => {
-  try {
-    const products = await Product.find().sort({ createdAt: -1 });
-    res.status(200).json(products);
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching products' });
-  }
-});
 
 app.get('/ping', (req, res) => res.send('pong'));
 
