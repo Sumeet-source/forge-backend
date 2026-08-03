@@ -10,7 +10,7 @@ app.options('*', cors({ origin: '*', credentials: true }));
 app.use(cors({ origin: '*', credentials: true }));
 app.use(express.json());
 
-// --- DATABASE CONNECTION ---
+// --- DATABASE ---
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://dhakad458669_db_user:f1xRo9VUjGwPtsu@cluster0-shard-00-00.alwcqf.mongodb.net:27017,cluster0-shard-00-01.alwcqf.mongodb.net:27017,cluster0-shard-00-02.alwcqf.mongodb.net:27017/forge_db?ssl=true&authSource=admin&retryWrites=true&w=majority&connectTimeoutMS=30000';
 
 const connectDB = async () => {
@@ -35,7 +35,7 @@ const UserSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', UserSchema);
 
-// --- SIGNUP ROUTE ---
+// --- SIGNUP ---
 app.post('/api/auth/signup', async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -60,7 +60,7 @@ app.post('/api/auth/signup', async (req, res) => {
   }
 });
 
-// --- LOGIN ROUTE ---
+// --- LOGIN ---
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -82,7 +82,6 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// --- KEEP-ALIVE ROUTE ---
 app.get('/ping', (req, res) => res.send('pong'));
 
 app.get('/', (req, res) => res.send('FORGE Backend is running!'));
