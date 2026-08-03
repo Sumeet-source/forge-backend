@@ -6,7 +6,7 @@ const authRoutes = require('./routes/authRoutes.js');
 
 const app = express();
 
-app.use(cors({ origin: '*', credentials: true }));
+app.use(cors({ origin: '*', credentials: true, methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'] }));
 app.use(express.json());
 
 // --- ROUTES ---
