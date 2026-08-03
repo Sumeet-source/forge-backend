@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
-// --- DATA API CONNECTION STRING (USES PORT 443 HTTPS) ---
-const MONGO_URI = 'mongodb+srv://dhakad458669_db_user:f1xRo9VUjGwPtsu@cluster0.alwcqf.mongodb.net/forge_db?retryWrites=true&w=majority&appName=Cluster0';
+// --- STANDARD CONNECTION STRING WITH IPv4 FORCE ---
+const MONGO_URI = 'mongodb://dhakad458669_db_user:f1xRo9VUjGwPtsu@cluster0-shard-00-00.alwcqf.mongodb.net:27017,cluster0-shard-00-01.alwcqf.mongodb.net:27017,cluster0-shard-00-02.alwcqf.mongodb.net:27017/forge_db?ssl=true&authSource=admin&retryWrites=true&w=majority&connectTimeoutMS=30000';
 
 const productSchema = new mongoose.Schema({
   title: String, price: Number, originalPrice: Number, image: String,
@@ -31,13 +31,12 @@ const products = [
 
 const connectDB = async () => {
     try {
-        // --- THE SECRET: apiVersion: '1' forces Mongoose to use HTTPS (Port 443) ---
         const options = {
-            apiVersion: '1',
-            driverInfo: { name: 'nodejs', version: '4.x' }
+            family: 4, 
+            serverSelectionTimeoutMS: 30000 // 30 seconds to connect
         };
         await mongoose.connect(MONGO_URI, options);
-        console.log('🌍 Connected to MongoDB Atlas via Data API!');
+        console.log('🌍 Connected to MongoDB Atlas!');
 
         await Product.deleteMany({});
         console.log('🧹 Cleared old products...');
