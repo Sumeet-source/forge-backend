@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 // --- CORRECTED CONNECTION STRING (alwcqf - single 'f') ---
-const MONGO_URI = 'mongodb+srv://dhakad458669_db_user:f1xRo9VUjGwPtsu@cluster0.alwcqf.mongodb.net/forge_db?retryWrites=true&w=majority&appName=Cluster0';
+const MONGO_URI = 'mongodb://dhakad458669_db_user:f1xRo9VUjGwPtsu@cluster0-shard-00-00.alwcqf.mongodb.net:27017,cluster0-shard-00-01.alwcqf.mongodb.net:27017,cluster0-shard-00-02.alwcqf.mongodb.net:27017/forge_db?ssl=true&authSource=admin&retryWrites=true&w=majority&connectTimeoutMS=30000';
 const productSchema = new mongoose.Schema({
   title: String, price: Number, originalPrice: Number, image: String,
   category: String, brand: String, inStock: Boolean, rating: Number,
