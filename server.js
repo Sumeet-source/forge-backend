@@ -5,8 +5,10 @@ const Product = require('./models/Product.js');
 const authRoutes = require('./routes/authRoutes.js');
 
 const app = express();
+app.options('*', cors({ origin: '*', credentials: true }));
 
 app.use(cors({ origin: '*', credentials: true }));
+
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
