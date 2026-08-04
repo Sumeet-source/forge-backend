@@ -13,7 +13,6 @@ router.post('/signup', async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-
     const newUser = new User({ name, email, password: hashedPassword });
     await newUser.save();
 
@@ -22,7 +21,6 @@ router.post('/signup', async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
-
     res.status(201).json({ message: 'User created!', token, user: { id: newUser._id, name, email, isAdmin: newUser.isAdmin } });
   } catch (error) {
     console.error(error);
@@ -44,7 +42,6 @@ router.post('/login', async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
-
     res.json({ token, user: { id: user._id, name: user.name, email, isAdmin: user.isAdmin } });
   } catch (error) {
     console.error(error);
