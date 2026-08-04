@@ -1,9 +1,0 @@
-services:
-  - type: web
-    name: forge-backend
-    runtime: node
-    plan: free
-    buildCommand: npm install
-    startCommand: node server.js
-    healthCheckPath: /ping
-    healthCheckTimeout: 30
