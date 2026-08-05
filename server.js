@@ -26,3 +26,6 @@ app.get('/', (req, res) => res.send('FORGE Backend is running!'));
 // Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
+
+const wishlistRoutes = require('./routes/wishlist');
+app.use('/api/wishlist', wishlistRoutes);
