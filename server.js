@@ -4,16 +4,17 @@ require('dotenv').config();
 
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth');
+const productRoutes = require('./routes/product');
 
 const app = express();
 
 app.use(cors({ origin: '*', credentials: true }));
 app.use(express.json());
 
-console.log('🔥 Server is about to connect to DB...');
 connectDB();
 
 app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
 
 app.get('/ping', (req, res) => res.send('pong'));
 app.get('/', (req, res) => res.send('FORGE Backend is running!'));
