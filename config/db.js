@@ -4,8 +4,8 @@ const connectDB = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URI, {
             family: 4,
-            replicaSet: 'atlas-q7r1ci-shard-0', // 🟢 Added: Yeh replica set ka naam hai
             serverSelectionTimeoutMS: 30000,
+            socketTimeoutMS: 45000, // 🟢 Added: 45 seconds ka timeout
         });
         console.log('✅ MongoDB Connected Successfully');
     } catch (error) {
