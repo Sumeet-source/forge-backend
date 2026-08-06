@@ -8,12 +8,17 @@ const User = require('../models/User');
 const router = express.Router();
 
 // --- Nodemailer Transporter (Gmail ke liye) ---
+// FIX: host/port explicit diya + family: 4 force kiya taaki Railway ke
+// IPv6 outbound issue (ENETUNREACH / ETIMEDOUT) na aaye.
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+  family: 4, // IPv4 force
 });
 
 // --- SIGNUP ---
