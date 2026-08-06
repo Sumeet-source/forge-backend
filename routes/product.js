@@ -8,7 +8,7 @@ router.get('/', async (req, res) => {
     const { category, q, limit = 50 } = req.query;
     let query = {};
 
-    // Category filter
+    // 🟢 Category filter (Agar URL mein category=Men aaya toh sirf Men wale aayenge)
     if (category) {
       query.category = category;
     }
