@@ -4,11 +4,10 @@ const Order = require('../models/Order');
 const mongoose = require('mongoose');
 const Razorpay = require('razorpay');
 
-// 🔥 Razorpay instance init (Test Keys - Abhi placeholder hain)
-// Aapko razorpay.com par sign up karke real keys mil jayengi
+// 🔥 Updated with your real Test Secret Key
 const razorpay = new Razorpay({
-  key_id: 'rzp_test_YOUR_TEST_KEY_ID',
-  key_secret: 'rzp_test_YOUR_TEST_KEY_SECRET',
+  key_id: 'rzp_test_TMNIPPznSJ7D',
+  key_secret: 'h62OyhjDXfuuVipHSbQ',
 });
 
 // --- ADMIN ORDERS ---
@@ -35,13 +34,13 @@ router.get('/my-orders', async (req, res) => {
   }
 });
 
-// --- CREATE RAZORPAY ORDER (NEW) ---
+// --- CREATE RAZORPAY ORDER ---
 router.post('/create-razorpay-order', async (req, res) => {
   try {
-    const { amount } = req.body; // Amount in rupees (e.g., 50)
+    const { amount } = req.body;
 
     const options = {
-      amount: amount * 100, // Razorpay paise mein leta hai (₹1 = 100 paise)
+      amount: amount * 100,
       currency: 'INR',
       receipt: `receipt_${Date.now()}`,
     };
