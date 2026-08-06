@@ -1,3 +1,6 @@
+const dns = require('dns');
+dns.setDefaultResultOrder('ipv4first'); // FIX: Railway pe IPv6 ENETUNREACH issue se bachne ke liye
+
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
