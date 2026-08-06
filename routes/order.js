@@ -34,7 +34,7 @@ router.get('/my-orders', async (req, res) => {
   }
 });
 
-// --- CREATE RAZORPAY ORDER ---
+// --- CREATE RAZORPAY ORDER (UPDATED ERROR HANDLING) ---
 router.post('/create-razorpay-order', async (req, res) => {
   try {
     const { amount } = req.body;
@@ -48,8 +48,11 @@ router.post('/create-razorpay-order', async (req, res) => {
     const order = await razorpay.orders.create(options);
     res.json(order);
   } catch (error) {
-    console.error('Razorpay order error:', error);
-    res.status(500).json({ message: 'Failed to create payment order' });
+    console.error('Razorpay order error details:', error);
+    // 🟢 Return the actual error message from Razorpay
+    res.status(error.statusCode || 500).json({
+      message: error.message || 'Failed to create payment order'
+    });
   }
 });
 
