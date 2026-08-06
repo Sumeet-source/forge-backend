@@ -2,12 +2,12 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const { Resend } = require('resend'); // 🟢 SMTP ki jagah Resend use kiya
+const { Resend } = require('resend');
 const User = require('../models/User');
 
 const router = express.Router();
 
-// 🟢 Resend Client init (API key se auth hoga)
+// 🟢 Resend Client (API Key se auth hoga)
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // --- SIGNUP ---
@@ -57,7 +57,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// --- FORGOT PASSWORD (Resend API ke saath) ---
+// --- FORGOT PASSWORD ---
 router.post('/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
@@ -76,7 +76,7 @@ router.post('/forgot-password', async (req, res) => {
 
     // 🟢 Resend ke through email bhejna
     const { data, error } = await resend.emails.send({
-      from: 'FORGE <onboarding@resend.dev>', // 📌 Resend ki default verified domain (free tier ke liye)
+      from: 'FORGE <onboarding@resend.dev>',
       to: [email],
       subject: 'FORGE - Password Reset Request',
       text: `You are receiving this because you requested the reset of the password for your account.\n\n
