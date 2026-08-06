@@ -2,8 +2,16 @@ const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
 const mongoose = require('mongoose');
+const Razorpay = require('razorpay');
 
-// GET: Admin ke liye saare orders fetch karo (Sabse naye pehle)
+// 🔥 Razorpay instance init (Test Keys - Abhi placeholder hain)
+// Aapko razorpay.com par sign up karke real keys mil jayengi
+const razorpay = new Razorpay({
+  key_id: 'rzp_test_YOUR_TEST_KEY_ID',
+  key_secret: 'rzp_test_YOUR_TEST_KEY_SECRET',
+});
+
+// --- ADMIN ORDERS ---
 router.get('/all', async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
@@ -13,7 +21,7 @@ router.get('/all', async (req, res) => {
   }
 });
 
-// GET: User ke saare orders fetch karo (User dashboard ke liye)
+// --- USER ORDERS ---
 router.get('/my-orders', async (req, res) => {
   try {
     const { userId } = req.query;
@@ -27,7 +35,26 @@ router.get('/my-orders', async (req, res) => {
   }
 });
 
-// POST: Naya order create karo
+// --- CREATE RAZORPAY ORDER (NEW) ---
+router.post('/create-razorpay-order', async (req, res) => {
+  try {
+    const { amount } = req.body; // Amount in rupees (e.g., 50)
+
+    const options = {
+      amount: amount * 100, // Razorpay paise mein leta hai (₹1 = 100 paise)
+      currency: 'INR',
+      receipt: `receipt_${Date.now()}`,
+    };
+
+    const order = await razorpay.orders.create(options);
+    res.json(order);
+  } catch (error) {
+    console.error('Razorpay order error:', error);
+    res.status(500).json({ message: 'Failed to create payment order' });
+  }
+});
+
+// --- PLACE ORDER (SAVE TO DB) ---
 router.post('/', async (req, res) => {
   try {
     const { user, items, totalAmount, paymentMethod, upiId, shippingAddress } = req.body;
