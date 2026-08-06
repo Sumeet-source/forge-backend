@@ -2,18 +2,23 @@ const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
 
-// GET: Products fetch karo (Backend Filtering + Search Support)
+// GET: Products fetch karo (Backend Filtering)
 router.get('/', async (req, res) => {
+  console.log('🟢 FULL REQUEST QUERY:', req.query); // Deploy Logs mein ye print hoga
+
   try {
     const { category, q, limit = 50 } = req.query;
-    let query = {};
-
-    // 🟢 Category filter (Agar URL mein category=Men aaya toh sirf Men wale aayenge)
-    if (category) {
-      query.category = category;
+    
+    // 🔥 SAFETY CHECK: Agar category URL mein nahi hai, toh error bhejo
+    if (!category) {
+      return res.status(400).json({ 
+        message: 'Category parameter is required!', 
+        receivedQuery: req.query 
+      });
     }
 
-    // Search filter (agar search query ho)
+    let query = { category: category }; // Seedha category daalo
+
     if (q) {
       query.$or = [
         { title: { $regex: q, $options: 'i' } },
@@ -24,11 +29,11 @@ router.get('/', async (req, res) => {
     const products = await Product.find(query).sort({ createdAt: -1 }).limit(parseInt(limit));
     res.json(products);
   } catch (error) {
+    console.error('Error fetching products:', error);
     res.status(500).json({ message: 'Server error fetching products' });
   }
 });
 
-// GET: Single product by ID
 router.get('/:id', async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
