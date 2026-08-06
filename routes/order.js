@@ -4,10 +4,10 @@ const Order = require('../models/Order');
 const mongoose = require('mongoose');
 const Razorpay = require('razorpay');
 
-// 🟢 Added .trim() to prevent invisible spaces from causing auth errors
+// 🟢 Environment variables se keys utha raha hai, aur .trim() use kar raha hai
 const razorpay = new Razorpay({
-  key_id: 'rzp_test_TMNIPPznSJ7D'.trim(),
-  key_secret: 'h62OyhjDXfuuVipHSbQ'.trim(),
+  key_id: process.env.RAZORPAY_KEY_ID.trim(),
+  key_secret: process.env.RAZORPAY_KEY_SECRET.trim(),
 });
 
 router.get('/all', async (req, res) => {
