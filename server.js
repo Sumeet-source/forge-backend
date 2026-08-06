@@ -29,3 +29,9 @@ app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`))
 
 const wishlistRoutes = require('./routes/wishlist');
 app.use('/api/wishlist', wishlistRoutes);
+
+const wishlistRoutes = require('./routes/wishlist');
+app.use('/api/wishlist', wishlistRoutes);
+
+const reviewRoutes = require('./routes/review');
+app.use('/api/reviews', reviewRoutes);
