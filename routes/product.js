@@ -2,22 +2,18 @@ const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
 
-// GET: Products fetch karo (Backend Filtering)
+// GET: Products fetch karo (Ab flexible hai - Category optional)
 router.get('/', async (req, res) => {
-  console.log('🟢 FULL REQUEST QUERY:', req.query); // Deploy Logs mein ye print hoga
+  console.log('🟢 FULL REQUEST QUERY:', req.query);
 
   try {
     const { category, q, limit = 50 } = req.query;
-    
-    // 🔥 SAFETY CHECK: Agar category URL mein nahi hai, toh error bhejo
-    if (!category) {
-      return res.status(400).json({ 
-        message: 'Category parameter is required!', 
-        receivedQuery: req.query 
-      });
-    }
+    let query = {};
 
-    let query = { category: category }; // Seedha category daalo
+    // 🟢 FIX: Agar category URL mein hai toh filter lagao, warna saare products bhejo
+    if (category) {
+      query.category = category;
+    }
 
     if (q) {
       query.$or = [
@@ -34,13 +30,16 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET: Single product by ID (Error handling safer)
 router.get('/:id', async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
     res.json(product);
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('Error fetching product by ID:', error);
+    // 🟢 FIX: Agar Mongoose CastError ya koi aur error ho, toh 500 return karo
+    res.status(500).json({ message: 'Server error fetching product' });
   }
 });
 
