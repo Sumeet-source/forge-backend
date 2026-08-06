@@ -4,13 +4,12 @@ const Order = require('../models/Order');
 const mongoose = require('mongoose');
 const Razorpay = require('razorpay');
 
-// 🔥 Updated with your real Test Secret Key
+// 🟢 Added .trim() to prevent invisible spaces from causing auth errors
 const razorpay = new Razorpay({
-  key_id: 'rzp_test_TMNIPPznSJ7D',
-  key_secret: 'h62OyhjDXfuuVipHSbQ',
+  key_id: 'rzp_test_TMNIPPznSJ7D'.trim(),
+  key_secret: 'h62OyhjDXfuuVipHSbQ'.trim(),
 });
 
-// --- ADMIN ORDERS ---
 router.get('/all', async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
@@ -20,7 +19,6 @@ router.get('/all', async (req, res) => {
   }
 });
 
-// --- USER ORDERS ---
 router.get('/my-orders', async (req, res) => {
   try {
     const { userId } = req.query;
@@ -34,7 +32,6 @@ router.get('/my-orders', async (req, res) => {
   }
 });
 
-// --- CREATE RAZORPAY ORDER (UPDATED ERROR HANDLING) ---
 router.post('/create-razorpay-order', async (req, res) => {
   try {
     const { amount } = req.body;
@@ -49,14 +46,12 @@ router.post('/create-razorpay-order', async (req, res) => {
     res.json(order);
   } catch (error) {
     console.error('Razorpay order error details:', error);
-    // 🟢 Return the actual error message from Razorpay
     res.status(error.statusCode || 500).json({
-      message: error.message || 'Failed to create payment order'
+      message: error.message || 'Failed to create payment order',
     });
   }
 });
 
-// --- PLACE ORDER (SAVE TO DB) ---
 router.post('/', async (req, res) => {
   try {
     const { user, items, totalAmount, paymentMethod, upiId, shippingAddress } = req.body;
