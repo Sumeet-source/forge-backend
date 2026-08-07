@@ -2,15 +2,14 @@ const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
 
-// GET: Products fetch karo (Ab flexible hai - Category optional)
+// GET: Products fetch karo (Backend Filtering + Pagination)
 router.get('/', async (req, res) => {
   console.log('🟢 FULL REQUEST QUERY:', req.query);
 
   try {
-    const { category, q, limit = 50 } = req.query;
+    const { category, q, limit = 8, page = 1 } = req.query;
     let query = {};
 
-    // 🟢 FIX: Agar category URL mein hai toh filter lagao, warna saare products bhejo
     if (category) {
       query.category = category;
     }
@@ -22,24 +21,37 @@ router.get('/', async (req, res) => {
       ];
     }
 
-    const products = await Product.find(query).sort({ createdAt: -1 }).limit(parseInt(limit));
-    res.json(products);
+    // 🟢 Pagination Logic (Skip calculate karo)
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    // Total count nikal lo (Load More button chhupane ke liye)
+    const totalCount = await Product.countDocuments(query);
+
+    const products = await Product.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    res.json({
+      products,
+      totalCount,
+      currentPage: parseInt(page),
+      totalPages: Math.ceil(totalCount / parseInt(limit))
+    });
   } catch (error) {
     console.error('Error fetching products:', error);
     res.status(500).json({ message: 'Server error fetching products' });
   }
 });
 
-// GET: Single product by ID (Error handling safer)
+// GET: Single product by ID
 router.get('/:id', async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
     res.json(product);
   } catch (error) {
-    console.error('Error fetching product by ID:', error);
-    // 🟢 FIX: Agar Mongoose CastError ya koi aur error ho, toh 500 return karo
-    res.status(500).json({ message: 'Server error fetching product' });
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
