@@ -7,7 +7,7 @@ const User = require('../models/User');
 
 const router = express.Router();
 
-// 🟢 Resend Client (API Key se auth hoga)
+// 🟢 Resend Client
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // --- SIGNUP ---
@@ -23,12 +23,26 @@ router.post('/signup', async (req, res) => {
     const newUser = new User({ name, email, password: hashedPassword });
     await newUser.save();
 
-    const token = jwt.sign(
+    // 🔥 Access Token (1 day expiry)
+    const accessToken = jwt.sign(
       { id: newUser._id, isAdmin: newUser.isAdmin },
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
-    res.status(201).json({ message: 'User created!', token, user: { id: newUser._id, name, email, isAdmin: newUser.isAdmin } });
+
+    // 🔥 Refresh Token (7 days expiry)
+    const refreshToken = jwt.sign(
+      { id: newUser._id, isAdmin: newUser.isAdmin },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.status(201).json({
+      message: 'User created!',
+      token: accessToken,
+      refreshToken: refreshToken,
+      user: { id: newUser._id, name, email, isAdmin: newUser.isAdmin }
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
@@ -45,12 +59,25 @@ router.post('/login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
-    const token = jwt.sign(
+    // 🔥 Access Token (1 day expiry)
+    const accessToken = jwt.sign(
       { id: user._id, isAdmin: user.isAdmin },
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
-    res.json({ token, user: { id: user._id, name: user.name, email, isAdmin: user.isAdmin } });
+
+    // 🔥 Refresh Token (7 days expiry)
+    const refreshToken = jwt.sign(
+      { id: user._id, isAdmin: user.isAdmin },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      token: accessToken,
+      refreshToken: refreshToken,
+      user: { id: user._id, name: user.name, email, isAdmin: user.isAdmin }
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
@@ -74,7 +101,6 @@ router.post('/forgot-password', async (req, res) => {
 
     const resetURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
-    // 🟢 Resend ke through email bhejna
     const { data, error } = await resend.emails.send({
       from: 'FORGE <onboarding@resend.dev>',
       to: [email],
@@ -124,6 +150,35 @@ router.post('/reset-password', async (req, res) => {
     console.error('Reset password error:', error);
     res.status(500).json({ message: 'Server error resetting password' });
   }
+});
+
+// 🔥 NEW: REFRESH TOKEN ROUTE (AuthContext is exactly calling this!)
+router.post('/refresh', async (req, res) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken) {
+    return res.status(401).json({ message: 'Refresh token required' });
+  }
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    
+    const newAccessToken = jwt.sign(
+      { id: decoded.id, isAdmin: decoded.isAdmin },
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+
+    res.json({ token: newAccessToken });
+  } catch (error) {
+    return res.status(403).json({ message: 'Invalid or expired refresh token' });
+  }
+});
+
+// 🔥 NEW: LOGOUT ROUTE (AuthContext is exactly calling this!)
+router.post('/logout', (req, res) => {
+  // JWT Stateless hai, toh server side kuch nahi karna.
+  // Sirf frontend token clear karega, hum bas success bhej rahe hain.
+  res.json({ message: 'Logged out successfully' });
 });
 
 module.exports = router;
