@@ -23,11 +23,11 @@ try {
 
 let storage;
 try {
+  // 🟢 FIX: 'allowed_formats' hata diya. Cloudinary auto-detect karega.
   storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
       folder: 'forge_products',
-      allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
     },
   });
   console.log('✅ Cloudinary Storage Setup Successful!');
@@ -37,11 +37,9 @@ try {
 
 const upload = multer({ storage: storage });
 
-// 🟢 FIX: Multer errors ko catch karna aur sahi logging karna
 router.post('/', (req, res) => {
   upload.single('image')(req, res, (err) => {
     if (err) {
-      // 🔥 Claude ke fix ke hisaab se exact message log kiya
       console.error('🔥 MULTER/CLOUDINARY CRASHED (Message):', err.message);
       console.error('🔥 MULTER/CLOUDINARY CRASHED (Stack):', err.stack);
       return res.status(500).json({ message: 'Upload middleware error: ' + err.message });
@@ -54,7 +52,6 @@ router.post('/', (req, res) => {
       console.log('✅ Cloudinary upload success:', req.file.path);
       res.json({ secure_url: req.file.path });
     } catch (error) {
-      // 🔥 Claude ke fix ke hisaab se exact message log kiya
       console.error('❌ Upload error (Message):', error.message);
       console.error('❌ Upload error (Stack):', error.stack);
       res.status(500).json({ message: 'Server error uploading image: ' + error.message });
