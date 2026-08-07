@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const Coupon = require('../models/Coupon');
-const mongoose = require('mongoose');
 
 // POST: Coupon apply karo (Verify aur Calculate)
 router.post('/apply', async (req, res) => {
@@ -12,7 +11,6 @@ router.post('/apply', async (req, res) => {
       return res.status(400).json({ message: 'Coupon code is required' });
     }
 
-    // Uppercase mein convert karo
     const coupon = await Coupon.findOne({ code: code.toUpperCase().trim(), isActive: true });
 
     if (!coupon) {
@@ -47,6 +45,10 @@ router.post('/apply', async (req, res) => {
     }
 
     const finalTotal = cartTotal - discountAmount;
+
+    // 🟢 FIX: Coupon successfully apply hone par timesUsed increment karo
+    coupon.timesUsed += 1;
+    await coupon.save();
 
     res.json({
       success: true,
