@@ -36,3 +36,6 @@ app.use('/api/coupons', couponRoutes);
 
 const uploadRoutes = require('./routes/upload');
 app.use('/api/admin/upload', uploadRoutes);
+
+const uploadRoutes = require('./routes/upload');
+app.use('/api/admin/upload', uploadRoutes);
