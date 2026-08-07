@@ -7,6 +7,8 @@ const UserSchema = new mongoose.Schema({
   isAdmin: { type: Boolean, default: false },
   resetPasswordToken: String,
   resetPasswordExpires: Date,
+  refreshToken: String, // 🟢 Naya field
+  refreshTokenExpires: Date, // 🟢 Naya field
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);
