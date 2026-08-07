@@ -6,31 +6,14 @@ const Coupon = require('../models/Coupon');
 router.post('/apply', async (req, res) => {
   try {
     const { code, cartTotal } = req.body;
-    
-    if (!code) {
-      return res.status(400).json({ message: 'Coupon code is required' });
-    }
+    if (!code) return res.status(400).json({ message: 'Coupon code is required' });
 
     const coupon = await Coupon.findOne({ code: code.toUpperCase().trim(), isActive: true });
+    if (!coupon) return res.status(404).json({ message: 'Invalid coupon code.' });
 
-    if (!coupon) {
-      return res.status(404).json({ message: 'Invalid coupon code.' });
-    }
-
-    // Expiry check
-    if (coupon.expiresAt < new Date()) {
-      return res.status(400).json({ message: 'Coupon has expired.' });
-    }
-
-    // Minimum order check
-    if (cartTotal < coupon.minOrderValue) {
-      return res.status(400).json({ message: `Minimum order of $${coupon.minOrderValue} required.` });
-    }
-
-    // Usage limit check
-    if (coupon.timesUsed >= coupon.usageLimit) {
-      return res.status(400).json({ message: 'Coupon usage limit has been reached.' });
-    }
+    if (coupon.expiresAt < new Date()) return res.status(400).json({ message: 'Coupon has expired.' });
+    if (cartTotal < coupon.minOrderValue) return res.status(400).json({ message: `Minimum order of $${coupon.minOrderValue} required.` });
+    if (coupon.timesUsed >= coupon.usageLimit) return res.status(400).json({ message: 'Coupon usage limit has been reached.' });
 
     let discountAmount = 0;
     if (coupon.discountType === 'percentage') {
@@ -38,15 +21,10 @@ router.post('/apply', async (req, res) => {
     } else {
       discountAmount = coupon.discountValue;
     }
-
-    // Discount cartTotal se zyada nahi ho sakta
-    if (discountAmount > cartTotal) {
-      discountAmount = cartTotal;
-    }
+    if (discountAmount > cartTotal) discountAmount = cartTotal;
 
     const finalTotal = cartTotal - discountAmount;
 
-    // 🟢 FIX: Coupon successfully apply hone par timesUsed increment karo
     coupon.timesUsed += 1;
     await coupon.save();
 
@@ -63,13 +41,31 @@ router.post('/apply', async (req, res) => {
   }
 });
 
-// ADMIN ROUTES (Seed data ya test ke liye)
+// 🟢 FIXED CREATE ROUTE: Handles lowercase conversion + proper error logging
 router.post('/create', async (req, res) => {
   try {
-    const newCoupon = new Coupon(req.body);
+    // Safely convert strings to numbers
+    const couponData = {
+      ...req.body,
+      discountValue: Number(req.body.discountValue),
+      minOrderValue: Number(req.body.minOrderValue || 0),
+      usageLimit: Number(req.body.usageLimit || 1)
+    };
+
+    // 🔥 FIX: Ensure discountType is lowercase for Mongoose enum
+    if (couponData.discountType) {
+      couponData.discountType = couponData.discountType.toLowerCase();
+    }
+
+    const newCoupon = new Coupon(couponData);
     const saved = await newCoupon.save();
     res.status(201).json(saved);
   } catch (error) {
+    console.error('🔥 Error creating coupon:', error);
+    // Return exact Mongoose validation error if it's a validation issue
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ message: error.message });
+    }
     res.status(500).json({ message: 'Error creating coupon' });
   }
 });
