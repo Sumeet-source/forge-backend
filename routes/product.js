@@ -58,10 +58,15 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { title, price, description, images, category, inStock } = req.body;
+    
+    // 🔥 YAHAN LOG ADD KIYA HAI
+    console.log('🟢 POST /api/products received:', { title, images });
+
     const newProduct = new Product({ title, price, description, images, category, inStock });
     const savedProduct = await newProduct.save();
     res.status(201).json(savedProduct);
   } catch (error) {
+    console.error('🔥 ERROR in POST /api/products:', error);
     res.status(500).json({ message: 'Server error adding product' });
   }
 });
@@ -77,9 +82,18 @@ router.delete('/:id', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   try {
-    const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    // 🔥 YAHAN LOG ADD KIYA HAI
+    console.log('🟡 PUT /api/products/' + req.params.id, req.body);
+
+    // 🔥 FIX: 'new: true' ki jagah 'returnDocument: 'after'' use kiya
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id, 
+      req.body, 
+      { returnDocument: 'after' } 
+    );
     res.json(updatedProduct);
   } catch (error) {
+    console.error('🔥 ERROR in PUT /api/products:', error);
     res.status(500).json({ message: 'Server error updating product' });
   }
 });
