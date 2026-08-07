@@ -15,7 +15,12 @@ const OrderSchema = new mongoose.Schema({
   totalAmount: { type: Number, required: true },
   paymentMethod: { type: String, default: 'UPI' },
   upiId: String,
-  status: { type: String, default: 'Pending' },
+  // 🟢 Naya Status Field
+  status: { 
+    type: String, 
+    enum: ['Pending', 'Shipped', 'Delivered', 'Cancelled'], 
+    default: 'Pending' 
+  },
   shippingAddress: {
     name: String,
     address: String,
