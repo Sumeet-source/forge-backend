@@ -5,11 +5,10 @@ const cloudinary = require('cloudinary').v2;
 
 const router = express.Router();
 
-// 🔥 DEBUG LOGS: Check karo ki Railway me variables aa rahe hain ya nahi
 console.log('🔴 Checking Env Variables on Railway...');
 console.log('CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME);
 console.log('CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY);
-console.log('CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? 'Exists' : 'MISSING (Check Railway!)');
+console.log('CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? 'Exists' : 'MISSING');
 
 try {
   cloudinary.config({
@@ -38,17 +37,25 @@ try {
 
 const upload = multer({ storage: storage });
 
-router.post('/', upload.single('image'), (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded.' });
+// 🟢 FIX: Multer ke errors ko catch karne ke liye callback wrap kiya
+router.post('/', (req, res) => {
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      console.error('🔥 MULTER/CLOUDINARY CRASHED:', err);
+      return res.status(500).json({ message: 'Upload middleware error: ' + err.message });
     }
-    console.log('✅ File uploaded to Cloudinary. URL:', req.file.path);
-    res.json({ secure_url: req.file.path });
-  } catch (error) {
-    console.error('❌ Upload error:', error);
-    res.status(500).json({ message: 'Server error uploading image' });
-  }
+
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded.' });
+      }
+      console.log('✅ Cloudinary upload success:', req.file.path);
+      res.json({ secure_url: req.file.path });
+    } catch (error) {
+      console.error('❌ Upload error:', error);
+      res.status(500).json({ message: 'Server error uploading image' });
+    }
+  });
 });
 
 module.exports = router;
