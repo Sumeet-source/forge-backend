@@ -41,7 +41,7 @@ router.post('/apply', async (req, res) => {
   }
 });
 
-// 🟢 FIXED CREATE ROUTE: Handles lowercase conversion + proper error logging
+// 🟢 FIXED CREATE ROUTE: Handles lowercase + duplicate error (11000)
 router.post('/create', async (req, res) => {
   try {
     // Safely convert strings to numbers
@@ -62,10 +62,17 @@ router.post('/create', async (req, res) => {
     res.status(201).json(saved);
   } catch (error) {
     console.error('🔥 Error creating coupon:', error);
-    // Return exact Mongoose validation error if it's a validation issue
+    
+    // Check for Mongoose validation errors
     if (error.name === 'ValidationError') {
       return res.status(400).json({ message: error.message });
     }
+    
+    // 🟢 NEW FIX: Catch MongoDB Duplicate Key Error (E11000)
+    if (error.code === 11000) {
+      return res.status(400).json({ message: 'Coupon code already exists. Please use a different code.' });
+    }
+
     res.status(500).json({ message: 'Error creating coupon' });
   }
 });
