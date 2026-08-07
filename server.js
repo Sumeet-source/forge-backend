@@ -33,3 +33,6 @@ app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`))
 
 const couponRoutes = require('./routes/coupon');
 app.use('/api/coupons', couponRoutes);
+
+const uploadRoutes = require('./routes/upload');
+app.use('/api/admin/upload', uploadRoutes);
