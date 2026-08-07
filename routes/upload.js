@@ -7,7 +7,7 @@ const router = express.Router();
 
 console.log('🔴 Checking Env Variables on Railway...');
 console.log('CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME);
-console.log('CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY);
+console.log('CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY ? 'Exists' : 'MISSING');
 console.log('CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? 'Exists' : 'MISSING');
 
 try {
@@ -18,7 +18,7 @@ try {
   });
   console.log('✅ Cloudinary Config Loaded Successfully!');
 } catch (error) {
-  console.error('🔥 CRITICAL ERROR IN CLOUDINARY CONFIG:', error);
+  console.error('🔥 CRITICAL ERROR IN CLOUDINARY CONFIG:', error.message);
 }
 
 let storage;
@@ -32,16 +32,18 @@ try {
   });
   console.log('✅ Cloudinary Storage Setup Successful!');
 } catch (error) {
-  console.error('🔥 CRITICAL ERROR IN CLOUDINARY STORAGE:', error);
+  console.error('🔥 CRITICAL ERROR IN CLOUDINARY STORAGE:', error.message);
 }
 
 const upload = multer({ storage: storage });
 
-// 🟢 FIX: Multer ke errors ko catch karne ke liye callback wrap kiya
+// 🟢 FIX: Multer errors ko catch karna aur sahi logging karna
 router.post('/', (req, res) => {
   upload.single('image')(req, res, (err) => {
     if (err) {
-      console.error('🔥 MULTER/CLOUDINARY CRASHED:', err);
+      // 🔥 Claude ke fix ke hisaab se exact message log kiya
+      console.error('🔥 MULTER/CLOUDINARY CRASHED (Message):', err.message);
+      console.error('🔥 MULTER/CLOUDINARY CRASHED (Stack):', err.stack);
       return res.status(500).json({ message: 'Upload middleware error: ' + err.message });
     }
 
@@ -52,8 +54,10 @@ router.post('/', (req, res) => {
       console.log('✅ Cloudinary upload success:', req.file.path);
       res.json({ secure_url: req.file.path });
     } catch (error) {
-      console.error('❌ Upload error:', error);
-      res.status(500).json({ message: 'Server error uploading image' });
+      // 🔥 Claude ke fix ke hisaab se exact message log kiya
+      console.error('❌ Upload error (Message):', error.message);
+      console.error('❌ Upload error (Stack):', error.stack);
+      res.status(500).json({ message: 'Server error uploading image: ' + error.message });
     }
   });
 });
