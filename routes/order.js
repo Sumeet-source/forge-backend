@@ -4,10 +4,13 @@ const Order = require('../models/Order');
 const mongoose = require('mongoose');
 const Razorpay = require('razorpay');
 
-// 🟢 Environment variables se keys utha raha hai
+// 🟢 FIX: Safely handle Environment Variables (Agar undefined hai toh crash nahi karega)
+const key_id = process.env.RAZORPAY_KEY_ID ? process.env.RAZORPAY_KEY_ID.trim() : '';
+const key_secret = process.env.RAZORPAY_KEY_SECRET ? process.env.RAZORPAY_KEY_SECRET.trim() : '';
+
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID.trim(),
-  key_secret: process.env.RAZORPAY_KEY_SECRET.trim(),
+  key_id: key_id,
+  key_secret: key_secret,
 });
 
 // --- ADMIN ORDERS ---
@@ -34,7 +37,7 @@ router.get('/my-orders', async (req, res) => {
   }
 });
 
-// 🟢 NEW ROUTE: Admin Order Status Update
+// --- ADMIN: UPDATE ORDER STATUS ---
 router.put('/:id/status', async (req, res) => {
   try {
     const { status } = req.body;
@@ -52,7 +55,7 @@ router.put('/:id/status', async (req, res) => {
     const order = await Order.findByIdAndUpdate(
       id,
       { status },
-      { new: true } // Updated document return karega
+      { new: true }
     );
 
     if (!order) {
@@ -70,15 +73,22 @@ router.put('/:id/status', async (req, res) => {
 router.post('/create-razorpay-order', async (req, res) => {
   try {
     const { amount } = req.body;
+
+    // Agar amount valid nahi hai toh error do
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ message: 'Invalid amount' });
+    }
+
     const options = {
-      amount: amount * 100,
+      amount: amount * 100, // Razorpay expects amount in paise
       currency: 'INR',
       receipt: `receipt_${Date.now()}`,
     };
+
     const order = await razorpay.orders.create(options);
     res.json(order);
   } catch (error) {
-    console.error('Razorpay order error:', error);
+    console.error('❌ Razorpay order error:', error);
     res.status(500).json({ message: 'Failed to create payment order' });
   }
 });
@@ -87,9 +97,11 @@ router.post('/create-razorpay-order', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { user, items, totalAmount, paymentMethod, upiId, shippingAddress } = req.body;
+    
     if (!user || !items || items.length === 0) {
       return res.status(400).json({ message: 'Invalid order data' });
     }
+
     const newOrder = new Order({
       user,
       items,
@@ -97,8 +109,9 @@ router.post('/', async (req, res) => {
       paymentMethod,
       upiId,
       shippingAddress,
-      status: 'Pending' // Default status
+      status: 'Pending'
     });
+
     const savedOrder = await newOrder.save();
     res.status(201).json(savedOrder);
   } catch (error) {
