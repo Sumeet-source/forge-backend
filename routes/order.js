@@ -4,7 +4,6 @@ const Order = require('../models/Order');
 const mongoose = require('mongoose');
 const Razorpay = require('razorpay');
 
-// 🟢 Safest Key Initialization (Crash hone se bachayega)
 const key_id = process.env.RAZORPAY_KEY_ID ? process.env.RAZORPAY_KEY_ID.trim() : '';
 const key_secret = process.env.RAZORPAY_KEY_SECRET ? process.env.RAZORPAY_KEY_SECRET.trim() : '';
 
@@ -57,12 +56,18 @@ router.post('/create-razorpay-order', async (req, res) => {
     const { amount } = req.body;
     if (!amount || amount <= 0) return res.status(400).json({ message: 'Invalid amount' });
     
-    // 🟢 Agar razorpay initialize nahi hua, toh clear error do
     if (!razorpay) {
       return res.status(500).json({ message: 'Razorpay not initialized. Check API keys in Railway variables.' });
     }
 
-    const options = { amount: amount * 100, currency: 'INR', receipt: `receipt_${Date.now()}` };
+    // 🟢 FIX: Amount ko integer (paise) mein convert karo
+    const amountInPaise = Math.round(amount * 100);
+
+    const options = { 
+      amount: amountInPaise, 
+      currency: 'INR', 
+      receipt: `receipt_${Date.now()}` 
+    };
     const order = await razorpay.orders.create(options);
     res.json(order);
   } catch (error) {
