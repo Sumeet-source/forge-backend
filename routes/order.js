@@ -4,10 +4,16 @@ const Order = require('../models/Order');
 const mongoose = require('mongoose');
 const Razorpay = require('razorpay');
 
+// 🟢 Safest Key Initialization (Crash hone se bachayega)
 const key_id = process.env.RAZORPAY_KEY_ID ? process.env.RAZORPAY_KEY_ID.trim() : '';
 const key_secret = process.env.RAZORPAY_KEY_SECRET ? process.env.RAZORPAY_KEY_SECRET.trim() : '';
 
-const razorpay = new Razorpay({ key_id, key_secret });
+let razorpay;
+try {
+  razorpay = new Razorpay({ key_id, key_secret });
+} catch (error) {
+  console.error('🔥 Razorpay Init Error:', error.message);
+}
 
 router.get('/all', async (req, res) => {
   try {
@@ -50,12 +56,18 @@ router.post('/create-razorpay-order', async (req, res) => {
   try {
     const { amount } = req.body;
     if (!amount || amount <= 0) return res.status(400).json({ message: 'Invalid amount' });
+    
+    // 🟢 Agar razorpay initialize nahi hua, toh clear error do
+    if (!razorpay) {
+      return res.status(500).json({ message: 'Razorpay not initialized. Check API keys in Railway variables.' });
+    }
+
     const options = { amount: amount * 100, currency: 'INR', receipt: `receipt_${Date.now()}` };
     const order = await razorpay.orders.create(options);
     res.json(order);
   } catch (error) {
     console.error('❌ Razorpay order error:', error);
-    res.status(500).json({ message: 'Failed to create payment order' });
+    res.status(500).json({ message: 'Failed to create payment order. Check Razorpay keys or network.' });
   }
 });
 
