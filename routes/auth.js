@@ -8,6 +8,13 @@ const User = require('../models/User');
 const router = express.Router();
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// 🟢 FIX: Environment variables check kar lo agar missing hain toh error do
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
+if (!JWT_SECRET || !JWT_REFRESH_SECRET) {
+  console.error("🔥 CRITICAL ERROR: JWT_SECRET or JWT_REFRESH_SECRET is missing in Environment Variables!");
+}
+
 // --- SIGNUP ---
 router.post('/signup', async (req, res) => {
   try {
@@ -21,26 +28,31 @@ router.post('/signup', async (req, res) => {
     const newUser = new User({ name, email, password: hashedPassword });
     await newUser.save();
 
+    // Safety check before sign
+    if (!JWT_SECRET || !JWT_REFRESH_SECRET) {
+      return res.status(500).json({ message: 'Server configuration error: Missing JWT secrets' });
+    }
+
     const accessToken = jwt.sign(
       { id: newUser._id, isAdmin: newUser.isAdmin },
-      process.env.JWT_SECRET,
+      JWT_SECRET,
       { expiresIn: '1d' }
     );
 
     const refreshToken = jwt.sign(
       { id: newUser._id, isAdmin: newUser.isAdmin },
-      process.env.JWT_REFRESH_SECRET,
+      JWT_REFRESH_SECRET,
       { expiresIn: '7d' }
     );
 
     res.status(201).json({
       message: 'User created!',
       token: accessToken,
-      refreshToken: refreshToken, // 🟢 Frontend ke liye add kiya
+      refreshToken: refreshToken,
       user: { id: newUser._id, name, email, isAdmin: newUser.isAdmin }
     });
   } catch (error) {
-    console.error(error);
+    console.error('Signup error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -55,21 +67,26 @@ router.post('/login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
+    // Safety check before sign
+    if (!JWT_SECRET || !JWT_REFRESH_SECRET) {
+      return res.status(500).json({ message: 'Server configuration error: Missing JWT secrets' });
+    }
+
     const accessToken = jwt.sign(
       { id: user._id, isAdmin: user.isAdmin },
-      process.env.JWT_SECRET,
+      JWT_SECRET,
       { expiresIn: '1d' }
     );
 
     const refreshToken = jwt.sign(
       { id: user._id, isAdmin: user.isAdmin },
-      process.env.JWT_REFRESH_SECRET,
+      JWT_REFRESH_SECRET,
       { expiresIn: '7d' }
     );
 
     res.json({
       token: accessToken,
-      refreshToken: refreshToken, // 🟢 Frontend ke liye add kiya
+      refreshToken: refreshToken,
       user: { id: user._id, name: user.name, email, isAdmin: user.isAdmin }
     });
   } catch (error) {
@@ -124,10 +141,13 @@ router.post('/refresh', async (req, res) => {
   const { refreshToken } = req.body;
   if (!refreshToken) return res.status(401).json({ message: 'Refresh token required' });
   try {
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    if (!JWT_REFRESH_SECRET || !JWT_SECRET) {
+      return res.status(500).json({ message: 'Server configuration error: Missing JWT secrets' });
+    }
+    const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
     const newAccessToken = jwt.sign(
       { id: decoded.id, isAdmin: decoded.isAdmin },
-      process.env.JWT_SECRET,
+      JWT_SECRET,
       { expiresIn: '1d' }
     );
     res.json({ token: newAccessToken });
