@@ -36,3 +36,6 @@ app.get('/', (req, res) => res.send('FORGE Backend is running!'));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server running on port ${PORT}`));
+
+const pincodeRoutes = require('./routes/pincode');
+app.use('/api/delivery', pincodeRoutes);
