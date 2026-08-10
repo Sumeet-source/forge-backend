@@ -7,18 +7,17 @@ router.get('/', async (req, res) => {
 
   try {
     const { category, subCategory, q, limit = 8, page = 1, sort, maxPrice } = req.query;
-    
-    // 🟢 BETTER FILTER BUILDING: $and aur $or use kiya hai
     let filters = [];
 
     if (category) filters.push({ category });
 
-    // 🟢 FIX: SubCategory ya Title dono mein search karega!
+    // 🟢 FINAL FIX: Trailing 's' hata diya (Plural -> Singular)
     if (subCategory) {
+      const cleanSub = subCategory.replace(/s$/i, ''); 
       filters.push({
         $or: [
-          { subCategory: { $regex: new RegExp(subCategory, 'i') } },
-          { title: { $regex: new RegExp(subCategory, 'i') } }
+          { subCategory: { $regex: new RegExp(cleanSub, 'i') } },
+          { title: { $regex: new RegExp(cleanSub, 'i') } }
         ]
       });
     }
@@ -56,7 +55,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Baaki ke routes (GET /:id, POST, DELETE, PUT) bilkul waise hi rahenge.
+// Baaki ke routes unchanged
 router.get('/:id', async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -87,7 +86,7 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ message: 'Server error deleting product' });
   }
 });
-
+//sumeet
 router.put('/:id', async (req, res) => {
   try {
     const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
@@ -98,4 +97,3 @@ router.put('/:id', async (req, res) => {
 });
 
 module.exports = router;
-
