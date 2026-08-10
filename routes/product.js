@@ -7,23 +7,37 @@ router.get('/', async (req, res) => {
 
   try {
     const { category, subCategory, q, limit = 8, page = 1, sort, maxPrice } = req.query;
-    let query = {};
-
-    if (category) query.category = category;
     
-    // 🟢🔥 FIX: Exact match hata kar Regex (Fuzzy Search) lagaya hai!
-    // Isse 'Shorts' dhundhne par 'Short Sleeve' wale products bhi mil jayenge.
+    // 🟢 BETTER FILTER BUILDING: $and aur $or use kiya hai
+    let filters = [];
+
+    if (category) filters.push({ category });
+
+    // 🟢 FIX: SubCategory ya Title dono mein search karega!
     if (subCategory) {
-      query.subCategory = { $regex: new RegExp(subCategory, 'i') }; 
+      filters.push({
+        $or: [
+          { subCategory: { $regex: new RegExp(subCategory, 'i') } },
+          { title: { $regex: new RegExp(subCategory, 'i') } }
+        ]
+      });
     }
 
     if (q) {
-      query.$or = [
-        { title: { $regex: q, $options: 'i' } },
-        { description: { $regex: q, $options: 'i' } }
-      ];
+      filters.push({
+        $or: [
+          { title: { $regex: q, $options: 'i' } },
+          { description: { $regex: q, $options: 'i' } }
+        ]
+      });
     }
-    if (maxPrice) query.price = { $lte: Number(maxPrice) };
+
+    if (maxPrice) filters.push({ price: { $lte: Number(maxPrice) } });
+
+    let query = {};
+    if (filters.length > 0) {
+      query = { $and: filters };
+    }
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const totalCount = await Product.countDocuments(query);
@@ -42,6 +56,7 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Baaki ke routes (GET /:id, POST, DELETE, PUT) bilkul waise hi rahenge.
 router.get('/:id', async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -83,3 +98,4 @@ router.put('/:id', async (req, res) => {
 });
 
 module.exports = router;
+
