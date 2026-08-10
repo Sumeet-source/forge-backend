@@ -194,3 +194,34 @@ router.put('/:id/cancel', async (req, res) => {
     res.status(500).json({ message: 'Server error cancelling order' });
   }
 });
+
+// 🟢 USER CANCEL ORDER ROUTE
+router.put('/:id/cancel', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ message: 'Invalid order ID' });
+    if (!userId) return res.status(400).json({ message: 'User ID required' });
+
+    const order = await Order.findById(id);
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    if (String(order.user) !== String(userId)) {
+      return res.status(403).json({ message: 'Unauthorized to cancel this order' });
+    }
+
+    const cancellableStatuses = ['Pending', 'Processing'];
+    if (!cancellableStatuses.includes(order.status)) {
+      return res.status(400).json({ message: `Cannot cancel order. Current status is ${order.status}.` });
+    }
+
+    order.status = 'Cancelled';
+    await order.save();
+
+    res.json({ message: 'Order cancelled successfully', order });
+  } catch (error) {
+    console.error('❌ Order cancellation error:', error);
+    res.status(500).json({ message: 'Server error cancelling order' });
+  }
+});
