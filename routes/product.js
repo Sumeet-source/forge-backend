@@ -6,12 +6,17 @@ router.get('/', async (req, res) => {
   console.log('🟢 FULL REQUEST QUERY:', req.query);
 
   try {
-    // 🟢 FIX: subCategory nikaalna aur filter mein add karna
     const { category, subCategory, q, limit = 8, page = 1, sort, maxPrice } = req.query;
     let query = {};
 
     if (category) query.category = category;
-    if (subCategory) query.subCategory = subCategory; // 🔥 Sub-category filter
+    
+    // 🟢🔥 FIX: Exact match hata kar Regex (Fuzzy Search) lagaya hai!
+    // Isse 'Shorts' dhundhne par 'Short Sleeve' wale products bhi mil jayenge.
+    if (subCategory) {
+      query.subCategory = { $regex: new RegExp(subCategory, 'i') }; 
+    }
+
     if (q) {
       query.$or = [
         { title: { $regex: q, $options: 'i' } },
