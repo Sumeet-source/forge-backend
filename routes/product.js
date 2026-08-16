@@ -24,8 +24,9 @@ router.get('/', async (req, res) => {
     }
 
     // 🟢 Sport Filter Logic
+        // 🟢 Sport Filter Logic (Case-Insensitive Fix)
     if (sport) {
-      filters.push({ sport: sport });
+      filters.push({ sport: { $regex: new RegExp(`^${sport}$`, 'i') } });
     }
 
     if (q) {
