@@ -6,7 +6,8 @@ router.get('/', async (req, res) => {
   console.log('🟢 FULL REQUEST QUERY:', req.query);
 
   try {
-    const { category, subCategory, q, limit = 8, page = 1, sort, maxPrice } = req.query;
+    // 🟢 Added 'sport' to destructuring
+    const { category, subCategory, sport, q, limit = 8, page = 1, sort, maxPrice } = req.query;
     let filters = [];
 
     if (category) filters.push({ category });
@@ -20,6 +21,11 @@ router.get('/', async (req, res) => {
           { title: { $regex: new RegExp(cleanSub, 'i') } }
         ]
       });
+    }
+
+    // 🟢 NEW: Sport Filter Logic
+    if (sport) {
+      filters.push({ sport: sport });
     }
 
     if (q) {
@@ -86,7 +92,7 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ message: 'Server error deleting product' });
   }
 });
-//sumeet
+
 router.put('/:id', async (req, res) => {
   try {
     const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
