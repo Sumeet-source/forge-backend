@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
 
     if (category) filters.push({ category });
 
-    // 🟢 FINAL FIX: Trailing 's' hata diya (Plural -> Singular)
+    // 🟢 Trailing 's' hata diya (Plural -> Singular)
     if (subCategory) {
       const cleanSub = subCategory.replace(/s$/i, ''); 
       filters.push({
@@ -23,7 +23,7 @@ router.get('/', async (req, res) => {
       });
     }
 
-    // 🟢 NEW: Sport Filter Logic
+    // 🟢 Sport Filter Logic
     if (sport) {
       filters.push({ sport: sport });
     }
