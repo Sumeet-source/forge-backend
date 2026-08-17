@@ -9,7 +9,7 @@ router.get('/', async (req, res) => {
     const { category, subCategory, q, limit = 8, page = 1, sort, maxPrice } = req.query;
     let filters = [];
 
-    // 🟢 SMART CATEGORY LOGIC: Agar 'Sportswear' hai, toh Men/Women bhi include karo
+    // 🟢 SMART CATEGORY LOGIC: Agar user Men/Women/Shoes/Accessories select kare, toh Outlet bhi include karo
     if (category) {
       if (category === 'Sportswear') {
         filters.push({
@@ -19,13 +19,20 @@ router.get('/', async (req, res) => {
             { category: 'Women' }
           ]
         });
+      } else if (category === 'Men' || category === 'Women' || category === 'Shoes' || category === 'Accessories') {
+        filters.push({
+          $or: [
+            { category: category },
+            { category: 'Outlet' }
+          ]
+        });
       } else {
         filters.push({ category });
       }
     }
 
     // 🟢 Sub-Category filter (Case-insensitive regex)
-      if (subCategory) {
+    if (subCategory) {
       filters.push({
         subCategory: { $regex: new RegExp(`^${subCategory}$`, 'i') }
       });
@@ -40,7 +47,7 @@ router.get('/', async (req, res) => {
       });
     }
 
-        if (maxPrice) {
+    if (maxPrice) {
       filters.push({ price: { $lte: Number(maxPrice) } });
     }
 
