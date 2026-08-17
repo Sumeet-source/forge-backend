@@ -16,6 +16,13 @@ const ProductSchema = new mongoose.Schema({
     default: 'Sportswear'
   },
 
+    discountPercent: {
+    type: Number,
+    default: 0, // Default 0 means no discount
+    min: 0,
+    max: 100
+  },
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('Product', ProductSchema);
