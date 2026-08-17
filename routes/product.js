@@ -76,6 +76,9 @@ router.get('/', async (req, res) => {
       query = { $and: filters };
     }
 
+    // 🟢 🟢 ADD THIS CONSOLE LOG TO DEBUG
+    console.log('🔍 FINAL MONGO QUERY:', JSON.stringify(query, null, 2));
+
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const totalCount = await Product.countDocuments(query);
 
@@ -92,46 +95,3 @@ router.get('/', async (req, res) => {
     res.status(500).json({ message: 'Server error fetching products' });
   }
 });
-
-// Baaki ke routes unchanged
-router.get('/:id', async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.id);
-    if (!product) return res.status(404).json({ message: 'Product not found' });
-    res.json(product);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-router.post('/', async (req, res) => {
-  try {
-    const { title, price, description, images, category, subCategory, inStock } = req.body;
-    const newProduct = new Product({ title, price, description, images, category, subCategory, inStock });
-    const savedProduct = await newProduct.save();
-    res.status(201).json(savedProduct);
-  } catch (error) {
-    console.error('🔥 ERROR in POST /api/products:', error);
-    res.status(500).json({ message: 'Server error adding product' });
-  }
-});
-
-router.delete('/:id', async (req, res) => {
-  try {
-    await Product.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Product deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error deleting product' });
-  }
-});
-
-router.put('/:id', async (req, res) => {
-  try {
-    const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
-    res.json(updatedProduct);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error updating product' });
-  }
-});
-
-module.exports = router;
