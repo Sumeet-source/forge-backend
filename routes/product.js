@@ -9,49 +9,36 @@ router.get('/', async (req, res) => {
     const { category, subCategory, q, limit = 8, page = 1, sort, maxPrice } = req.query;
     let filters = [];
 
-    // 🟢 SMART LOGIC: Outlet products ko unki subCategory ke hisaab se route karo
     if (category) {
-      // Agar user 'Outlet' select karta hai, toh sirf Outlet dikhao
       if (category === 'Outlet') {
         filters.push({ category: 'Outlet' });
       } 
-      // Agar user 'Men' ya 'Women' select karta hai
       else if (category === 'Men' || category === 'Women') {
-        // 🔥 Agar subCategory Shoes ki hai (Sneaker, Running Shoe, etc.), toh Shoes page par dikhe
         const shoeSubs = ['Sneaker', 'Running Shoe', 'Casual Shoe', 'Formal Shoe', 'Loafer', 'Boot', 'Sandal'];
         if (subCategory && shoeSubs.includes(subCategory)) {
           filters.push({ category: 'Shoes' });
         } 
-        // Warna normal Men/Women category dikhao
         else {
           filters.push({ category });
         }
       } 
-      // 🟢 CLAUDE'S FINAL FIX: Outlet shoes ko Shoes page par dikhane ke liye
       else if (category === 'Shoes') {
         if (subCategory) {
-          // Sirf tab Outlet products include karo jab subCategory filter diya ho
           filters.push({
             $or: [
               { category: 'Shoes' },
-              { 
-                category: 'Outlet',
-                subCategory: { $regex: new RegExp(`^${subCategory}$`, 'i') }
-              }
+              { category: 'Outlet', subCategory: { $regex: new RegExp(`^${subCategory}$`, 'i') } }
             ]
           });
         } else {
-          // Bina filter ke sirf pure "Shoes" category dikhao, Outlet nahi
           filters.push({ category: 'Shoes' });
         }
       }
-      // Baaki categories (Accessories) normal kaam karein
       else {
         filters.push({ category });
       }
     }
 
-    // 🟢 Sub-Category filter (Case-insensitive regex)
     if (subCategory) {
       filters.push({
         subCategory: { $regex: new RegExp(`^${subCategory}$`, 'i') }
@@ -76,9 +63,6 @@ router.get('/', async (req, res) => {
       query = { $and: filters };
     }
 
-    // 🟢 🟢 ADD THIS CONSOLE LOG TO DEBUG
-    console.log('🔍 FINAL MONGO QUERY:', JSON.stringify(query, null, 2));
-
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const totalCount = await Product.countDocuments(query);
 
@@ -95,3 +79,45 @@ router.get('/', async (req, res) => {
     res.status(500).json({ message: 'Server error fetching products' });
   }
 });
+
+router.get('/:id', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.post('/', async (req, res) => {
+  try {
+    const { title, price, description, images, category, subCategory, inStock } = req.body;
+    const newProduct = new Product({ title, price, description, images, category, subCategory, inStock });
+    const savedProduct = await newProduct.save();
+    res.status(201).json(savedProduct);
+  } catch (error) {
+    console.error('🔥 ERROR in POST /api/products:', error);
+    res.status(500).json({ message: 'Server error adding product' });
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    await Product.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Product deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error deleting product' });
+  }
+});
+
+router.put('/:id', async (req, res) => {
+  try {
+    const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
+    res.json(updatedProduct);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error updating product' });
+  }
+});
+
+module.exports = router;
