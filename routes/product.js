@@ -25,13 +25,9 @@ router.get('/', async (req, res) => {
     }
 
     // 🟢 Sub-Category filter (Case-insensitive regex)
-    if (subCategory) {
-      const cleanSub = subCategory.replace(/s$/i, ''); 
+      if (subCategory) {
       filters.push({
-        $or: [
-          { subCategory: { $regex: new RegExp(cleanSub, 'i') } },
-          { title: { $regex: new RegExp(cleanSub, 'i') } }
-        ]
+        subCategory: { $regex: new RegExp(`^${subCategory}$`, 'i') }
       });
     }
 
