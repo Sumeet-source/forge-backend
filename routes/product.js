@@ -44,7 +44,9 @@ router.get('/', async (req, res) => {
       });
     }
 
-    if (maxPrice) filters.push({ price: { $lte: Number(maxPrice) } });
+        if (maxPrice) {
+      filters.push({ price: { $lte: Number(maxPrice) } });
+    }
 
     let query = {};
     if (filters.length > 0) {
