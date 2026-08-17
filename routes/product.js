@@ -9,24 +9,26 @@ router.get('/', async (req, res) => {
     const { category, subCategory, q, limit = 8, page = 1, sort, maxPrice } = req.query;
     let filters = [];
 
-    // 🟢 SMART CATEGORY LOGIC: Agar user Men/Women/Shoes/Accessories select kare, toh Outlet bhi include karo
+    // 🟢 SMART LOGIC: Outlet products ko unki subCategory ke hisaab se route karo
     if (category) {
-      if (category === 'Sportswear') {
-        filters.push({
-          $or: [
-            { category: 'Sportswear' },
-            { category: 'Men' },
-            { category: 'Women' }
-          ]
-        });
-      } else if (category === 'Men' || category === 'Women' || category === 'Shoes' || category === 'Accessories') {
-        filters.push({
-          $or: [
-            { category: category },
-            { category: 'Outlet' }
-          ]
-        });
-      } else {
+      // Agar user 'Outlet' select karta hai, toh sirf Outlet dikhao
+      if (category === 'Outlet') {
+        filters.push({ category: 'Outlet' });
+      } 
+      // Agar user 'Men' ya 'Women' select karta hai
+      else if (category === 'Men' || category === 'Women') {
+        // 🔥 Agar subCategory Shoes ki hai (Sneaker, Running Shoe, etc.), toh Shoes page par dikhe
+        const shoeSubs = ['Sneaker', 'Running Shoe', 'Casual Shoe', 'Formal Shoe', 'Loafer', 'Boot', 'Sandal'];
+        if (subCategory && shoeSubs.includes(subCategory)) {
+          filters.push({ category: 'Shoes' });
+        } 
+        // Warna normal Men/Women category dikhao
+        else {
+          filters.push({ category });
+        }
+      } 
+      // Baaki categories (Shoes, Accessories) normal kaam karein
+      else {
         filters.push({ category });
       }
     }
