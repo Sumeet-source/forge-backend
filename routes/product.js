@@ -6,13 +6,25 @@ router.get('/', async (req, res) => {
   console.log('🟢 FULL REQUEST QUERY:', req.query);
 
   try {
-    // 🟢 Added 'sport' to destructuring
-    const { category, subCategory, sport, q, limit = 8, page = 1, sort, maxPrice } = req.query;
+    const { category, subCategory, q, limit = 8, page = 1, sort, maxPrice } = req.query;
     let filters = [];
 
-    if (category) filters.push({ category });
+    // 🟢 SMART CATEGORY LOGIC: Agar 'Sportswear' hai, toh Men/Women bhi include karo
+    if (category) {
+      if (category === 'Sportswear') {
+        filters.push({
+          $or: [
+            { category: 'Sportswear' },
+            { category: 'Men' },
+            { category: 'Women' }
+          ]
+        });
+      } else {
+        filters.push({ category });
+      }
+    }
 
-    // 🟢 Trailing 's' hata diya (Plural -> Singular)
+    // 🟢 Sub-Category filter (Case-insensitive regex)
     if (subCategory) {
       const cleanSub = subCategory.replace(/s$/i, ''); 
       filters.push({
@@ -21,12 +33,6 @@ router.get('/', async (req, res) => {
           { title: { $regex: new RegExp(cleanSub, 'i') } }
         ]
       });
-    }
-
-    // 🟢 Sport Filter Logic
-        // 🟢 Sport Filter Logic (Case-Insensitive Fix)
-    if (sport) {
-      filters.push({ sport: { $regex: new RegExp(`^${sport}$`, 'i') } });
     }
 
     if (q) {
