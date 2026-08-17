@@ -27,12 +27,15 @@ router.get('/', async (req, res) => {
           filters.push({ category });
         }
       } 
-      // 🟢 Agar user 'Shoes' select karta hai, toh Outlet ka Shoes bhi dikhao
+      // 🟢 FINAL FIX: Outlet shoes ko Shoes page par dikhane ke liye
       else if (category === 'Shoes') {
         filters.push({
           $or: [
             { category: 'Shoes' },
-            { category: 'Outlet' }
+            { 
+              category: 'Outlet',
+              subCategory: subCategory // SubCategory match zaroori hai
+            }
           ]
         });
       }
