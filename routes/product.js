@@ -27,17 +27,23 @@ router.get('/', async (req, res) => {
           filters.push({ category });
         }
       } 
-      // 🟢 FINAL FIX: Outlet shoes ko Shoes page par dikhane ke liye
+      // 🟢 CLAUDE'S FINAL FIX: Outlet shoes ko Shoes page par dikhane ke liye
       else if (category === 'Shoes') {
-        filters.push({
-          $or: [
-            { category: 'Shoes' },
-            { 
-              category: 'Outlet',
-              subCategory: subCategory // SubCategory match zaroori hai
-            }
-          ]
-        });
+        if (subCategory) {
+          // Sirf tab Outlet products include karo jab subCategory filter diya ho
+          filters.push({
+            $or: [
+              { category: 'Shoes' },
+              { 
+                category: 'Outlet',
+                subCategory: { $regex: new RegExp(`^${subCategory}$`, 'i') }
+              }
+            ]
+          });
+        } else {
+          // Bina filter ke sirf pure "Shoes" category dikhao, Outlet nahi
+          filters.push({ category: 'Shoes' });
+        }
       }
       // Baaki categories (Accessories) normal kaam karein
       else {
