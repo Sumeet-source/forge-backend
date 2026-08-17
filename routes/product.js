@@ -27,7 +27,16 @@ router.get('/', async (req, res) => {
           filters.push({ category });
         }
       } 
-      // Baaki categories (Shoes, Accessories) normal kaam karein
+      // 🟢 Agar user 'Shoes' select karta hai, toh Outlet ka Shoes bhi dikhao
+      else if (category === 'Shoes') {
+        filters.push({
+          $or: [
+            { category: 'Shoes' },
+            { category: 'Outlet' }
+          ]
+        });
+      }
+      // Baaki categories (Accessories) normal kaam karein
       else {
         filters.push({ category });
       }
