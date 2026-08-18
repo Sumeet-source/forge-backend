@@ -71,7 +71,13 @@ router.get('/', async (req, res) => {
     else if (sort === 'price_desc') sortOption = { price: -1 };
     else if (sort === 'newest') sortOption = { createdAt: -1 };
 
-    const products = await Product.find(query).sort(sortOption).skip(skip).limit(parseInt(limit));
+    // 🟢 OPTIMIZATION: Sirf zaroori fields select karo aur lean() use karo
+    const products = await Product.find(query)
+      .select('title price images category subCategory inStock') // ✅ Sirf ye fields bhejo
+      .sort(sortOption)
+      .skip(skip)
+      .limit(parseInt(limit))
+      .lean(); // ✅ JSON conversion fast
 
     res.json({ products, totalCount, currentPage: parseInt(page), totalPages: Math.ceil(totalCount / parseInt(limit)) });
   } catch (error) {
