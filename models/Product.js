@@ -9,18 +9,25 @@ const ProductSchema = new mongoose.Schema({
   subCategory: { type: String },
   inStock: { type: Boolean, default: true },
   
-  // 🟢 NEW SPORT FIELD ADDED
+  // 🟢 SPORT FIELD
   sport: {
     type: String,
     enum: ['Running', 'Training', 'Sportswear', 'Basketball', 'Football', 'Yoga'],
     default: 'Sportswear'
   },
 
-    discountPercent: {
+  discountPercent: {
     type: Number,
-    default: 0, // Default 0 means no discount
+    default: 0,
     min: 0,
     max: 100
+  },
+
+  // 🟢 NEW GENDER FIELD ADDED
+  gender: {
+    type: String,
+    enum: ['Men', 'Women', 'Unisex'],
+    default: 'Unisex'
   },
 
 }, { timestamps: true });

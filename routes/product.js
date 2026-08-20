@@ -6,7 +6,7 @@ router.get('/', async (req, res) => {
   console.log('🟢 FULL REQUEST QUERY:', req.query);
 
   try {
-    const { category, subCategory, q, limit = 8, page = 1, sort, maxPrice } = req.query;
+    const { category, subCategory, q, limit = 8, page = 1, sort, maxPrice, gender } = req.query;
     let filters = [];
 
     if (category) {
@@ -45,6 +45,10 @@ router.get('/', async (req, res) => {
       });
     }
 
+    if (gender && ['Men', 'Women', 'Unisex'].includes(gender)) {
+      filters.push({ gender });
+    }
+
     if (q) {
       filters.push({
         $or: [
@@ -71,13 +75,12 @@ router.get('/', async (req, res) => {
     else if (sort === 'price_desc') sortOption = { price: -1 };
     else if (sort === 'newest') sortOption = { createdAt: -1 };
 
-    // 🟢 OPTIMIZATION: Sirf zaroori fields select karo aur lean() use karo
     const products = await Product.find(query)
-      .select('title price images category subCategory inStock') // ✅ Sirf ye fields bhejo
+      .select('title price images category subCategory gender discountPercent inStock')
       .sort(sortOption)
       .skip(skip)
       .limit(parseInt(limit))
-      .lean(); // ✅ JSON conversion fast
+      .lean();
 
     res.json({ products, totalCount, currentPage: parseInt(page), totalPages: Math.ceil(totalCount / parseInt(limit)) });
   } catch (error) {
@@ -98,8 +101,32 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    const { title, price, description, images, category, subCategory, inStock } = req.body;
-    const newProduct = new Product({ title, price, description, images, category, subCategory, inStock });
+    const { 
+      title, 
+      price, 
+      description, 
+      images, 
+      category, 
+      subCategory, 
+      sport,
+      discountPercent,
+      gender,
+      inStock 
+    } = req.body;
+
+    const newProduct = new Product({ 
+      title, 
+      price, 
+      description, 
+      images, 
+      category, 
+      subCategory, 
+      sport: sport || 'Running',
+      discountPercent: discountPercent || 0,
+      gender: gender || 'Unisex',
+      inStock 
+    });
+    
     const savedProduct = await newProduct.save();
     res.status(201).json(savedProduct);
   } catch (error) {
@@ -119,7 +146,11 @@ router.delete('/:id', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   try {
-    const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id, 
+      req.body, 
+      { returnDocument: 'after' }
+    );
     res.json(updatedProduct);
   } catch (error) {
     res.status(500).json({ message: 'Server error updating product' });
